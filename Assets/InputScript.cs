@@ -1,16 +1,19 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class InputScript : MonoBehaviour {
+public class InputScript : MonoBehaviour
+{
     private CharacterController _controller;
 
     // Use this for initialization
-    void Start () {
-	    _controller = GetComponent<CharacterController>();
+    void Start()
+    {
+        _controller = GetComponent<CharacterController>();
     }
-	
-	// Update is called once per frame
-	void Update () {
+
+    // Update is called once per frame
+    void Update()
+    {
         var vector = new Vector3(0, 0, 0);
 
         if (Input.GetKey(KeyCode.W))
