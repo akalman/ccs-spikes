@@ -1,13 +1,14 @@
 ﻿using UnityEngine;
-using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 
 public class CameraMovement : MonoBehaviour
 {
     public bool IsTwoPlayers;
     public GameObject PlayerOne;
+    public GameObject PlayerTwo;
 
     private Transform _transform;
-    private Vector3 _currentVelocity;
 
     // Use this for initialization
     void Start()
@@ -18,39 +19,62 @@ public class CameraMovement : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (!IsTwoPlayers)
+        var pois = GetPlayers().SelectMany<GameObject, Vector3>(GetPointOfInterest);
+        var target = GetTargetCameraPosition(pois);
+
+        _transform.position = target;
+    }
+
+    private IList<GameObject> GetPlayers()
+    {
+        if (IsTwoPlayers)
         {
-            var playerPos = PlayerOne.transform.position;
-            var playerVel = PlayerOne.GetComponent<CharacterController>().velocity;
-            var verticalOffset = new Vector3(0, 15, 0);
-            var horizontalOffset = new Vector3(0, 0, -15);
-
-            if (playerVel != Vector3.zero)
-            {
-                playerPos += playerVel * 3;
-            }
-            
-            var destination = playerPos + verticalOffset + horizontalOffset;
-            var acceleration = destination - _transform.position - _currentVelocity;
-
-            // clamp acceleration and apply to velocity
-            var xAccelerationVector = new Vector3(acceleration.x, 0, 0);
-            _currentVelocity += ClampComponentVector(xAccelerationVector, acceleration.x, _currentVelocity.x);
-
-            var yAccelerationVector = new Vector3(0, acceleration.y, 0);
-            _currentVelocity += ClampComponentVector(yAccelerationVector, acceleration.y, _currentVelocity.y);
-
-            var zAccelerationVector = new Vector3(0, 0, acceleration.z);
-            _currentVelocity += ClampComponentVector(zAccelerationVector, acceleration.z, _currentVelocity.z);
-
-            // apply velocity to position
-            if (_currentVelocity.magnitude > 1)
-            {
-                _currentVelocity.Normalize();
-            }
-
-            _transform.position += _currentVelocity;
+            return new[] { PlayerOne, PlayerTwo };
         }
+        return new[] { PlayerOne };
+    }
+
+    private IList<Vector3> GetPointOfInterest(GameObject player)
+    {
+        var pois = new Vector3[0].ToList();
+        var playerPos = player.transform.position;
+        var playerVel = player.GetComponent<CharacterController>().velocity;
+
+        pois.Add(playerPos);
+        if (playerVel != Vector3.zero)
+        {
+            pois.Add(playerPos + playerVel * 3);
+        }
+
+        return pois;
+    }
+
+    private Vector3 GetTargetCameraPosition(IEnumerable<Vector3> pointsOfInterest)
+    {
+        var xMin = float.MaxValue;
+        var yMin = float.MaxValue;
+        var zMin = float.MaxValue;
+        var xMax = float.MinValue;
+        var yMax = float.MinValue;
+        var zMax = float.MinValue;
+
+        foreach (var poi in pointsOfInterest)
+        {
+            if (poi.x > xMax) xMax = poi.x;
+            if (poi.y > yMax) yMax = poi.y;
+            if (poi.z > zMax) zMax = poi.z;
+            if (poi.x < xMin) xMin = poi.x;
+            if (poi.y < yMin) yMin = poi.y;
+            if (poi.z < zMin) zMin = poi.z;
+        }
+
+        var dist = new Vector3(xMax, yMax, zMax) - new Vector3(xMin, yMin, zMin);
+        var height = dist.magnitude / 2;
+        var center = new Vector3(xMin, yMin, zMin) + (dist / 2);
+        var target = center + (new Vector3(0, 1, -1) * height);
+        Debug.Log(target);
+
+        return target + new Vector3(0, 1, -1);
     }
 
     private Vector3 ClampComponentVector(
