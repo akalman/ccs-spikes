@@ -41,13 +41,14 @@ public class InputScript : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.F))
         {
-            _reticule = (GameObject) Instantiate(reticule, transform.position, transform.rotation);
+            var pos = transform.position;
+            pos.y = 0.1f;
+            _reticule = (GameObject) Instantiate(reticule, pos, transform.rotation);
             _state = CharacterState.CASTING;
         }
         else if (Input.GetKeyUp(KeyCode.F))
         {
             _reticule.SendMessage("Cast");
-            //_reticule = null;
             Destroy(_reticule);
             _state = CharacterState.MOVING;
         }
