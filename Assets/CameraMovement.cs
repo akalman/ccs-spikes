@@ -68,13 +68,26 @@ public class CameraMovement : MonoBehaviour
             if (poi.z < zMin) zMin = poi.z;
         }
 
-        var dist = new Vector3(xMax, yMax, zMax) - new Vector3(xMin, yMin, zMin);
-        var height = dist.magnitude / 2;
-        var center = new Vector3(xMin, yMin, zMin) + (dist / 2);
-        var target = center + (new Vector3(0, 1, -1) * height);
-        Debug.Log(target);
+        var bottomLeftCorner = new Vector3(xMin, yMin, zMin);
+        var topRightCorner = new Vector3(xMax, yMax, zMax);
+        var center = bottomLeftCorner + (topRightCorner - bottomLeftCorner) / 2;
 
-        return target + new Vector3(0, 1, -1);
+        var horizontalDistance = xMax - xMin;
+        var verticalDistance = zMax - zMin;
+        var aspectRatio = Screen.width / Screen.height;
+        var heightPerVerticalDistance = .5f / Mathf.Tan(45 * (Mathf.PI / 180));
+
+        if (verticalDistance < 2 && horizontalDistance < 2 * aspectRatio)
+        {
+            return center + new Vector3(0, heightPerVerticalDistance * 2, 0);
+        }
+
+        if (verticalDistance > horizontalDistance / aspectRatio)
+        {
+            return center + new Vector3(0, verticalDistance * heightPerVerticalDistance);
+        }
+
+        return center + new Vector3(0, (horizontalDistance / aspectRatio) * heightPerVerticalDistance);
     }
 
     private Vector3 ClampComponentVector(
