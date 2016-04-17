@@ -19,6 +19,8 @@ public class InputScript2 : Input
 
         _controller = GetComponent<CharacterController>();
         _state = CharacterState.MOVING;
+
+        _spell = new TerribleSpell();   
     }
 
     // Update is called once per frame

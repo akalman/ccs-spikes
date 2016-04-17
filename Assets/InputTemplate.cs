@@ -24,6 +24,8 @@ public abstract class Input : MonoBehaviour
     protected DirectionKeyConfig _dirConfig;
     protected SpellKeyConfig _spellConfig;
 
+    protected ISpell _spell;
+
     public Vector3 CreateMoveVec(float f)
     {
         var vector = new Vector3(0, 0, 0);
@@ -52,7 +54,7 @@ public abstract class Input : MonoBehaviour
         {
             var pos = transform.position;
             pos.y = 0.1f;
-            _reticule = (GameObject) Instantiate(reticule, pos, transform.rotation);
+            _reticule = SpellReticule.Create(reticule, pos, transform.rotation, _spell);
             _state = CharacterState.CASTING;
         }
         else if (UnityEngine.Input.GetKeyUp(_spellConfig.cast))

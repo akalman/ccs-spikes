@@ -1,8 +1,4 @@
-﻿using UnityEngine;
-using System.Collections;
-using System;
-
-public interface ISpell {
+﻿public interface ISpell {
 
     ISpell fuseWith(ISpell other);
 
@@ -28,7 +24,24 @@ public enum Element
     Ice,
     Lightning,
     Adam,
-    White
+    White,
+    Matt
+}
+
+public class TerribleSpell : ISpell
+{
+    private SpellEffect _effect = new SpellEffect { damage = .01f, radius = 0.01f, element = Element.Matt };
+
+    public SpellEffect effect()
+    {
+        return _effect;
+    }
+
+    public ISpell fuseWith(ISpell other)
+    {
+        // fuck this spell
+        return other;
+    }
 }
 
 public class PerfectSpell : ISpell
