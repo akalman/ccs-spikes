@@ -32,7 +32,7 @@ public class InputScript : MonoBehaviour
                 Move();
                 break;
             default:
-                Cast();
+                Reticule();
                 break;
         }
     }
@@ -52,34 +52,49 @@ public class InputScript : MonoBehaviour
             Destroy(_reticule);
             _state = CharacterState.MOVING;
         }
+
+        if (_reticule != null)
+        {
+            if (Input.GetKeyDown(KeyCode.Y))
+            {
+                _reticule.SendMessage("Lock");
+            }
+            else if (Input.GetKeyUp(KeyCode.Y))
+            {
+                _reticule.SendMessage("Unlock");
+            }
+        }
     }
 
-    private void Cast()
+    private void Reticule()
     {
+        _reticule.SendMessage("Move", CreateVec(0.1f));
+    }
 
+    private Vector3 CreateVec(float f)
+    {
+        var vector = new Vector3(0, 0, 0);
+        if (Input.GetKey(KeyCode.W))
+        {
+            vector += new Vector3(0.0f, 0.0f, f);
+        }
+        if (Input.GetKey(KeyCode.A))
+        {
+            vector += new Vector3(-f, 0.0f, 0.0f);
+        }
+        if (Input.GetKey(KeyCode.S))
+        {
+            vector += new Vector3(0.0f, 0.0f, -f);
+        }
+        if (Input.GetKey(KeyCode.D))
+        {
+            vector += new Vector3(f, 0, 0);
+        }
+        return vector;
     }
 
     private void Move()
     {
-        var vector = new Vector3(0, 0, 0);
-
-        if (Input.GetKey(KeyCode.W))
-        {
-            vector += new Vector3(0, 0, 1);
-        }
-        if (Input.GetKey(KeyCode.A))
-        {
-            vector += new Vector3(-1, 0, 0);
-        }
-        if (Input.GetKey(KeyCode.S))
-        {
-            vector += new Vector3(0, 0, -1);
-        }
-        if (Input.GetKey(KeyCode.D))
-        {
-            vector += new Vector3(1, 0, 0);
-        }
-
-        _controller.SimpleMove(vector);
+        _controller.SimpleMove(CreateVec(1.0f));
     }
 }
