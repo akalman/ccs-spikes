@@ -15,7 +15,7 @@ public class InputScript2 : Input
 
         _spellConfig = new SpellKeyConfig();
         _spellConfig.cast = KeyCode.N;
-        _spellConfig.hold = KeyCode.M;
+        _spellConfig.transition = KeyCode.M;
 
         _controller = GetComponent<CharacterController>();
         _state = CharacterState.MOVING;

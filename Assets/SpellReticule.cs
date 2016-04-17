@@ -27,14 +27,17 @@ public class SpellReticule : MonoBehaviour {
     {
     }
 
-    void Lock()
+    void Transition()
     {
-        _state = State.LOCKED;
-    }
-
-    void Unlock()
-    {
-        _state = State.FREE;
+        switch (_state)
+        {
+            case State.FREE:
+                _state = State.LOCKED;
+                break;
+            case State.LOCKED:
+                _state = State.FREE;
+                break;
+        }
     }
 
 	void Move(Vector3 vector) {

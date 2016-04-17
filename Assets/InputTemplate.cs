@@ -12,6 +12,12 @@ public abstract class Input : MonoBehaviour
         CASTING
     }
 
+    public enum CastingState
+    {
+        FREE,
+        HOLD
+    }
+
     protected CharacterController _controller;
     protected CharacterState _state;
 
@@ -23,21 +29,21 @@ public abstract class Input : MonoBehaviour
         var vector = new Vector3(0, 0, 0);
         if (UnityEngine.Input.GetKey(_dirConfig.up))
         {
-            vector += new Vector3(0.0f, 0.0f, f);
+            vector += new Vector3(0.0f, 0.0f, 1);
         }
         if (UnityEngine.Input.GetKey(_dirConfig.left))
         {
-            vector += new Vector3(-f, 0.0f, 0.0f);
+            vector += new Vector3(-1, 0.0f, 0.0f);
         }
         if (UnityEngine.Input.GetKey(_dirConfig.down))
         {
-            vector += new Vector3(0.0f, 0.0f, -f);
+            vector += new Vector3(0.0f, 0.0f, -1);
         }
         if (UnityEngine.Input.GetKey(_dirConfig.right))
         {
-            vector += new Vector3(f, 0, 0);
+            vector += new Vector3(1, 0, 0);
         }
-        return vector;
+        return vector.normalized * f;
     }
 
     public void Transition()
@@ -46,7 +52,7 @@ public abstract class Input : MonoBehaviour
         {
             var pos = transform.position;
             pos.y = 0.1f;
-            _reticule = (GameObject)Instantiate(reticule, pos, transform.rotation);
+            _reticule = (GameObject) Instantiate(reticule, pos, transform.rotation);
             _state = CharacterState.CASTING;
         }
         else if (UnityEngine.Input.GetKeyUp(_spellConfig.cast))
@@ -58,13 +64,9 @@ public abstract class Input : MonoBehaviour
 
         if (_reticule != null)
         {
-            if (UnityEngine.Input.GetKeyDown(_spellConfig.hold))
+            if (UnityEngine.Input.GetKeyDown(_spellConfig.transition))
             {
-               _reticule.SendMessage("Lock");
-            }
-            else if (UnityEngine.Input.GetKeyUp(_spellConfig.hold))
-            {
-                _reticule.SendMessage("Unlock");
+               _reticule.SendMessage("Transition");
             }
         }
     }
@@ -92,5 +94,5 @@ public struct DirectionKeyConfig
 public struct SpellKeyConfig
 {
     public UnityEngine.KeyCode cast { get; set; }
-    public UnityEngine.KeyCode hold { get; set; }
+    public UnityEngine.KeyCode transition { get; set; }
 }
