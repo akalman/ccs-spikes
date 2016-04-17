@@ -1,38 +1,38 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class InputScript2 : MonoBehaviour
+public class InputScript2 : Input
 {
-    private CharacterController _controller;
 
     // Use this for initialization
     void Start()
     {
+        _dirConfig = new DirectionKeyConfig();
+        _dirConfig.up = KeyCode.I;
+        _dirConfig.right = KeyCode.L;
+        _dirConfig.down = KeyCode.K;
+        _dirConfig.left = KeyCode.J;
+
+        _spellConfig = new SpellKeyConfig();
+        _spellConfig.cast = KeyCode.N;
+        _spellConfig.hold = KeyCode.M;
+
         _controller = GetComponent<CharacterController>();
+        _state = CharacterState.MOVING;
     }
 
     // Update is called once per frame
     void Update()
     {
-        var vector = new Vector3(0, 0, 0);
-
-        if (Input.GetKey(KeyCode.I))
+        Transition();
+        switch (_state)
         {
-            vector += new Vector3(0, 0, 1);
+            case CharacterState.MOVING:
+                Move();
+                break;
+            default:
+                Reticule();
+                break;
         }
-        if (Input.GetKey(KeyCode.J))
-        {
-            vector += new Vector3(-1, 0, 0);
-        }
-        if (Input.GetKey(KeyCode.K))
-        {
-            vector += new Vector3(0, 0, -1);
-        }
-        if (Input.GetKey(KeyCode.L))
-        {
-            vector += new Vector3(1, 0, 0);
-        }
-
-        _controller.SimpleMove(vector);
     }
 }
