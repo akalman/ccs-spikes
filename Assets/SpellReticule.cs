@@ -13,9 +13,7 @@ public class SpellReticule : MonoBehaviour {
     }
     
     // Use this for initialization
-    void Start() {
-        _spell = new PerfectSpell();
-    }
+    void Start() {}
 
     void Cast()
     {
@@ -27,14 +25,17 @@ public class SpellReticule : MonoBehaviour {
     {
     }
 
-    void Lock()
+    void Transition()
     {
-        _state = State.LOCKED;
-    }
-
-    void Unlock()
-    {
-        _state = State.FREE;
+        switch (_state)
+        {
+            case State.FREE:
+                _state = State.LOCKED;
+                break;
+            case State.LOCKED:
+                _state = State.FREE;
+                break;
+        }
     }
 
 	void Move(Vector3 vector) {
@@ -42,5 +43,15 @@ public class SpellReticule : MonoBehaviour {
         {
             transform.position += vector;
         }
+    }
+
+    public static GameObject Create(GameObject reticule, Vector3 pos, Quaternion rot, ISpell spell)
+    {
+        GameObject newObject = Instantiate(reticule, pos, rot) as GameObject;
+        SpellReticule ret = newObject.GetComponent<SpellReticule>();
+        
+        ret._spell = spell;
+
+        return newObject;
     }
 }
