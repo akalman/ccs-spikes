@@ -1,11 +1,11 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public abstract class Input : MonoBehaviour
+public abstract class Parent : MonoBehaviour
 {
     public GameObject reticule;
-    protected GameObject _reticule;
 
+    protected SpellReticule _reticule;
     protected SpellRegistry _spellRegistry;
 
     public enum CharacterState
@@ -56,12 +56,12 @@ public abstract class Input : MonoBehaviour
         {
             var pos = transform.position;
             pos.y = 0.1f;
-            _reticule = SpellReticule.Create(reticule, pos, transform.rotation, _spell, _spellRegistry);
+            _reticule = SpellReticule.Create(reticule, pos, transform.rotation, _spell, _spellRegistry, this);
             _state = CharacterState.CASTING;
         }
         else if (UnityEngine.Input.GetKeyUp(_spellConfig.cast))
         {
-            _reticule.SendMessage("Cast");
+            _reticule.Cast();
             Destroy(_reticule);
             _state = CharacterState.MOVING;
         }
@@ -70,14 +70,14 @@ public abstract class Input : MonoBehaviour
         {
             if (UnityEngine.Input.GetKeyDown(_spellConfig.transition))
             {
-               _reticule.SendMessage("Transition");
+                _reticule.Transition();
             }
         }
     }
 
     protected void Reticule()
     {
-        _reticule.SendMessage("Move", CreateMoveVec(0.1f));
+        _reticule.Move(CreateMoveVec(0.1f));
     }
 
 

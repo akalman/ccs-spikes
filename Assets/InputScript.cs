@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Linq;
 
-public class InputScript : Input
+public class InputScript : Parent
 {
   
     // Use this for initialization
