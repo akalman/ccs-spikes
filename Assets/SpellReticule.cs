@@ -22,12 +22,15 @@ public class SpellReticule : MonoBehaviour {
     {
         var thing = _registry.WithinRadius(_registryId, 1f);
 
+        var spell = _spell;
+
         foreach (var t in thing)
         {
+            spell = t.Value._spell.fuseWith(spell);
             t.Value.Fuse();
         }
 
-        Debug.Log(_spell.effect());
+        Debug.Log(spell.effect());
         CleanUp();
     }
 
