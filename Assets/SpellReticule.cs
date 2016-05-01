@@ -24,12 +24,23 @@ public class SpellReticule : MonoBehaviour {
 
         foreach (var t in thing)
         {
-            Debug.Log(t);
+            t.Value.Fuse();
         }
 
         Debug.Log(_spell.effect());
-        _registry.Remove(_registryId);
+        CleanUp();
+    }
 
+    public void Fuse()
+    {
+        Debug.Log(_spell.ToString() + " -- fused");
+        _parent.SpellFused();
+        CleanUp();
+    }
+
+    private void CleanUp()
+    {
+        _registry.Remove(_registryId);
         Destroy(gameObject);
     }
 	

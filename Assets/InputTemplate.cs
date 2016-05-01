@@ -52,34 +52,37 @@ public abstract class Parent : MonoBehaviour
 
     public void Transition()
     {
-        if (UnityEngine.Input.GetKeyDown(_spellConfig.cast))
+        if (Input.GetKeyDown(_spellConfig.cast))
         {
             var pos = transform.position;
             pos.y = 0.1f;
             _reticule = SpellReticule.Create(reticule, pos, transform.rotation, _spell, _spellRegistry, this);
             _state = CharacterState.CASTING;
         }
-        else if (UnityEngine.Input.GetKeyUp(_spellConfig.cast))
+        else if (Input.GetKeyUp(_spellConfig.cast))
         {
             _reticule.Cast();
-            Destroy(_reticule);
             _state = CharacterState.MOVING;
         }
 
         if (_reticule != null)
         {
-            if (UnityEngine.Input.GetKeyDown(_spellConfig.transition))
+            if (Input.GetKeyDown(_spellConfig.transition))
             {
                 _reticule.Transition();
             }
         }
     }
 
+    public void SpellFused()
+    {
+        _state = CharacterState.MOVING;
+    }
+
     protected void Reticule()
     {
         _reticule.Move(CreateMoveVec(0.1f));
     }
-
 
     protected void Move()
     {
