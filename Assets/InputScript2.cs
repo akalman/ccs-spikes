@@ -1,5 +1,5 @@
 ﻿using UnityEngine;
-using System.Collections;
+using System.Linq;
 
 public class InputScript2 : Input
 {
@@ -20,7 +20,8 @@ public class InputScript2 : Input
         _controller = GetComponent<CharacterController>();
         _state = CharacterState.MOVING;
 
-        _spell = new TerribleSpell();   
+        _spell = new TerribleSpell();
+        _spellRegistry  = FindObjectsOfType(typeof(SpellRegistry)).Cast<SpellRegistry>().First();
     }
 
     // Update is called once per frame

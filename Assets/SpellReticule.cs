@@ -5,6 +5,8 @@ public class SpellReticule : MonoBehaviour {
 
     private State _state;
     private ISpell _spell;
+    private SpellRegistry _registry;
+    private long _registryId;
 
     private enum State
     {
@@ -17,7 +19,15 @@ public class SpellReticule : MonoBehaviour {
 
     void Cast()
     {
+        var thing = _registry.WithinRadius(_registryId, 1f);
+
+        foreach (var t in thing)
+        {
+            Debug.Log(t);
+        }
+
         Debug.Log(_spell.effect());
+        _registry.Remove(_registryId);
     }
 	
 	// Update is called once per frame
@@ -45,12 +55,14 @@ public class SpellReticule : MonoBehaviour {
         }
     }
 
-    public static GameObject Create(GameObject reticule, Vector3 pos, Quaternion rot, ISpell spell)
+    public static GameObject Create(GameObject reticule, Vector3 pos, Quaternion rot, ISpell spell, SpellRegistry registry)
     {
         GameObject newObject = Instantiate(reticule, pos, rot) as GameObject;
         SpellReticule ret = newObject.GetComponent<SpellReticule>();
         
         ret._spell = spell;
+        ret._registry = registry;
+        ret._registryId = registry.Register(ret);
 
         return newObject;
     }

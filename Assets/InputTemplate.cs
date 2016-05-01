@@ -6,6 +6,8 @@ public abstract class Input : MonoBehaviour
     public GameObject reticule;
     protected GameObject _reticule;
 
+    protected SpellRegistry _spellRegistry;
+
     public enum CharacterState
     {
         MOVING,
@@ -54,7 +56,7 @@ public abstract class Input : MonoBehaviour
         {
             var pos = transform.position;
             pos.y = 0.1f;
-            _reticule = SpellReticule.Create(reticule, pos, transform.rotation, _spell);
+            _reticule = SpellReticule.Create(reticule, pos, transform.rotation, _spell, _spellRegistry);
             _state = CharacterState.CASTING;
         }
         else if (UnityEngine.Input.GetKeyUp(_spellConfig.cast))
