@@ -5,6 +5,9 @@ public class SpellReticule : MonoBehaviour {
 
     private State _state;
     private ISpell _spell;
+    private SpellRegistry _registry;
+    private long _registryId;
+    private Parent _parent;
 
     private enum State
     {
@@ -15,9 +18,33 @@ public class SpellReticule : MonoBehaviour {
     // Use this for initialization
     void Start() {}
 
-    void Cast()
+    public void Cast()
     {
-        Debug.Log(_spell.effect());
+        var thing = _registry.WithinRadius(_registryId, 1f);
+
+        var spell = _spell;
+
+        foreach (var t in thing)
+        {
+            spell = t.Value._spell.fuseWith(spell);
+            t.Value.Fuse();
+        }
+
+        Debug.Log(spell.effect());
+        CleanUp();
+    }
+
+    public void Fuse()
+    {
+        Debug.Log(_spell.ToString() + " -- fused");
+        _parent.SpellFused();
+        CleanUp();
+    }
+
+    private void CleanUp()
+    {
+        _registry.Remove(_registryId);
+        Destroy(gameObject);
     }
 	
 	// Update is called once per frame
@@ -25,7 +52,7 @@ public class SpellReticule : MonoBehaviour {
     {
     }
 
-    void Transition()
+    public void Transition()
     {
         switch (_state)
         {
@@ -38,20 +65,23 @@ public class SpellReticule : MonoBehaviour {
         }
     }
 
-	void Move(Vector3 vector) {
+	public void Move(Vector3 vector) {
         if (_state == State.FREE)
         {
             transform.position += vector;
         }
     }
 
-    public static GameObject Create(GameObject reticule, Vector3 pos, Quaternion rot, ISpell spell)
+    public static SpellReticule Create(GameObject reticule, Vector3 pos, Quaternion rot, ISpell spell, SpellRegistry registry, Parent parent)
     {
         GameObject newObject = Instantiate(reticule, pos, rot) as GameObject;
         SpellReticule ret = newObject.GetComponent<SpellReticule>();
         
         ret._spell = spell;
+        ret._registry = registry;
+        ret._registryId = registry.Register(ret);
+        ret._parent = parent;
 
-        return newObject;
+        return ret;
     }
 }

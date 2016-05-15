@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
-using System.Collections;
+using System.Linq;
 
-public class InputScript2 : Input
+public class InputScript2 : Parent
 {
 
     // Use this for initialization
@@ -20,7 +20,8 @@ public class InputScript2 : Input
         _controller = GetComponent<CharacterController>();
         _state = CharacterState.MOVING;
 
-        _spell = new TerribleSpell();   
+        _spell = new TerribleSpell();
+        _reticuleFactory = FindObjectsOfType(typeof(ReticuleFactory)).Cast<ReticuleFactory>().First();
     }
 
     // Update is called once per frame

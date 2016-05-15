@@ -1,10 +1,12 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public abstract class Input : MonoBehaviour
+public abstract class Parent : MonoBehaviour
 {
     public GameObject reticule;
-    protected GameObject _reticule;
+
+    protected SpellReticule _reticule;
+    protected ReticuleFactory _reticuleFactory;
 
     public enum CharacterState
     {
@@ -50,34 +52,37 @@ public abstract class Input : MonoBehaviour
 
     public void Transition()
     {
-        if (UnityEngine.Input.GetKeyDown(_spellConfig.cast))
+        if (Input.GetKeyDown(_spellConfig.cast))
         {
             var pos = transform.position;
             pos.y = 0.1f;
-            _reticule = SpellReticule.Create(reticule, pos, transform.rotation, _spell);
+            _reticule = _reticuleFactory.reticuleFor(_spell, pos, transform.rotation, this);
             _state = CharacterState.CASTING;
         }
-        else if (UnityEngine.Input.GetKeyUp(_spellConfig.cast))
+        else if (Input.GetKeyUp(_spellConfig.cast))
         {
-            _reticule.SendMessage("Cast");
-            Destroy(_reticule);
+            _reticule.Cast();
             _state = CharacterState.MOVING;
         }
 
         if (_reticule != null)
         {
-            if (UnityEngine.Input.GetKeyDown(_spellConfig.transition))
+            if (Input.GetKeyDown(_spellConfig.transition))
             {
-               _reticule.SendMessage("Transition");
+                _reticule.Transition();
             }
         }
     }
 
-    protected void Reticule()
+    public void SpellFused()
     {
-        _reticule.SendMessage("Move", CreateMoveVec(0.1f));
+        _state = CharacterState.MOVING;
     }
 
+    protected void Reticule()
+    {
+        _reticule.Move(CreateMoveVec(0.1f));
+    }
 
     protected void Move()
     {

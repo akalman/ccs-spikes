@@ -21,10 +21,11 @@ public struct SpellEffect
 public enum Element
 {
     Fire,
-    Ice,
+    Water,
     Lightning,
+    Metal,
+    Earth,
     Adam,
-    White,
     Matt
 }
 

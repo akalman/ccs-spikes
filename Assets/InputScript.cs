@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
-using System.Collections;
+using System.Linq;
 
-public class InputScript : Input
+public class InputScript : Parent
 {
   
     // Use this for initialization
@@ -21,6 +21,7 @@ public class InputScript : Input
         _state = CharacterState.MOVING;
 
         _spell = new PerfectSpell();
+        _reticuleFactory = FindObjectsOfType(typeof(ReticuleFactory)).Cast<ReticuleFactory>().First();
     }
 
     // Update is called once per frame
