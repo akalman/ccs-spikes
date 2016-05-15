@@ -21,7 +21,7 @@ public class InputScript2 : Parent
         _state = CharacterState.MOVING;
 
         _spell = new TerribleSpell();
-        _spellRegistry  = FindObjectsOfType(typeof(SpellRegistry)).Cast<SpellRegistry>().First();
+        _reticuleFactory = FindObjectsOfType(typeof(ReticuleFactory)).Cast<ReticuleFactory>().First();
     }
 
     // Update is called once per frame

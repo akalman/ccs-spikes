@@ -21,8 +21,7 @@ public class InputScript : Parent
         _state = CharacterState.MOVING;
 
         _spell = new PerfectSpell();
-        _spellRegistry = FindObjectsOfType(typeof(SpellRegistry)).Cast<SpellRegistry>().First();
-        _spellRegistry.GetRegistry();
+        _reticuleFactory = FindObjectsOfType(typeof(ReticuleFactory)).Cast<ReticuleFactory>().First();
     }
 
     // Update is called once per frame

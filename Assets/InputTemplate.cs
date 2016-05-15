@@ -6,7 +6,7 @@ public abstract class Parent : MonoBehaviour
     public GameObject reticule;
 
     protected SpellReticule _reticule;
-    protected SpellRegistry _spellRegistry;
+    protected ReticuleFactory _reticuleFactory;
 
     public enum CharacterState
     {
@@ -56,7 +56,7 @@ public abstract class Parent : MonoBehaviour
         {
             var pos = transform.position;
             pos.y = 0.1f;
-            _reticule = SpellReticule.Create(reticule, pos, transform.rotation, _spell, _spellRegistry, this);
+            _reticule = _reticuleFactory.reticuleFor(_spell, pos, transform.rotation, this);
             _state = CharacterState.CASTING;
         }
         else if (Input.GetKeyUp(_spellConfig.cast))
