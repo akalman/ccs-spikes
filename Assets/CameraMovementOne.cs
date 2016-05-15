@@ -7,24 +7,39 @@ public class CameraMovementOne : MonoBehaviour
     public bool IsTwoPlayers;
     public GameObject PlayerOne;
     public GameObject PlayerTwo;
-    public Camera CameraPrefab;
+    public GameObject CameraPrefab;
 
     private Transform _transform;
-    private IList<Camera> _otherCameras;
+    private GameObject[] _otherCameras;
+    private bool[] _needCamera;
 
     // Use this for initialization
     void Start()
     {
         _transform = GetComponent<Transform>();
+        _otherCameras = new GameObject[10];
+        _needCamera = new bool[10];
     }
 
     // Update is called once per frame
     void Update()
     {
+        for (var i = 0; i < _needCamera.Length; i++)
+        {
+            _needCamera[i] = false;
+        }
+
         var pois = GetPlayers().Select<GameObject, IEnumerable<Vector3>>(GetPointOfInterest);
         var target = GetTargetCameraPosition(pois.ToList());
-
         _transform.position = target;
+
+        for (var i = 0; i < _needCamera.Length; i++)
+        {
+            if (!_needCamera[i] && _otherCameras[i] != null)
+            {
+                Destroy(_otherCameras[i]);
+            }
+        }
     }
 
     private IList<GameObject> GetPlayers()
@@ -63,7 +78,17 @@ public class CameraMovementOne : MonoBehaviour
 
     public void CreateBubble(IList<IEnumerable<Vector3>> pointsOfInterest, int index)
     {
-        var newCamera = Instantiate<Camera>(CameraPrefab);
+        if (_otherCameras[index] == null)
+        {
+            var newCamera = Instantiate<GameObject>(CameraPrefab);
+            _otherCameras[index] = newCamera;
+        }
+
+        var camera = _otherCameras[index];
+        camera.transform.position = GetTargetCameraPosition(new[] { pointsOfInterest[index] });
+        camera.GetComponent<Camera>().depth = Camera.main.depth + 1;
+        camera.GetComponent<Camera>().rect = new Rect(0, 0, .2f, .2f);
+        _needCamera[index] = true;
     }
 
     private Vector3 GetTargetCameraPosition(IList<IEnumerable<Vector3>> pointsOfInterest)
@@ -91,7 +116,7 @@ public class CameraMovementOne : MonoBehaviour
 
         Debug.Log(topRightCorner - bottomLeftCorner);
 
-        if ((topRightCorner - bottomLeftCorner).magnitude > 50)
+        if ((topRightCorner - bottomLeftCorner).magnitude > 30)
         {
             var outlierIndex = GetOutlierIndex(pointsOfInterest);
             CreateBubble(pointsOfInterest, outlierIndex);
@@ -107,15 +132,15 @@ public class CameraMovementOne : MonoBehaviour
 
             if (verticalDistance < 2 && horizontalDistance < 2 * aspectRatio)
             {
-                return center + new Vector3(0, heightPerVerticalDistance * 2, 0);
+                return center + new Vector3(0, Mathf.Max(heightPerVerticalDistance * 2, 5), 0);
             }
 
             if (verticalDistance > horizontalDistance / aspectRatio)
             {
-                return center + new Vector3(0, verticalDistance * heightPerVerticalDistance);
+                return center + new Vector3(0, Mathf.Max(verticalDistance * heightPerVerticalDistance, 5), 0);
             }
 
-            return center + new Vector3(0, (horizontalDistance / aspectRatio) * heightPerVerticalDistance);
+            return center + new Vector3(0, Mathf.Max((horizontalDistance / aspectRatio) * heightPerVerticalDistance, 5), 0);
         }
     }
 
