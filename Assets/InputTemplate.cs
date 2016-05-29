@@ -59,7 +59,7 @@ public abstract class Parent : MonoBehaviour
             _reticule = _reticuleFactory.reticuleFor(_spell, pos, transform.rotation, this);
             _state = CharacterState.CASTING;
         }
-        else if (Input.GetKeyUp(_spellConfig.cast))
+        else if (Input.GetKeyUp(_spellConfig.cast) && _state == CharacterState.CASTING)
         {
             _reticule.Cast();
             _state = CharacterState.MOVING;
