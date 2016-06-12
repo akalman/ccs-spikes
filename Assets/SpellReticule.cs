@@ -20,14 +20,6 @@ public class SpellReticule : MonoBehaviour {
 
     public void Cast()
     {
-        foreach (var t in _registry.WithinRadius(1f, transform.position)
-            .Where(other => other.Key != _registryId)
-            .Select(other => other.Value._spell.FuseWith(_spell))
-            )
-        {
-            Debug.Log(t);
-        }
-
         var spell = _registry
             .WithinRadius(1f, transform.position)
             .Where(other => other.Key != _registryId)

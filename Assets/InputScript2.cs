@@ -23,19 +23,4 @@ public class InputScript2 : Parent
         _spell = new TerribleSpell();
         _reticuleFactory = FindObjectsOfType(typeof(ReticuleFactory)).Cast<ReticuleFactory>().First();
     }
-
-    // Update is called once per frame
-    void Update()
-    {
-        Transition();
-        switch (_state)
-        {
-            case CharacterState.MOVING:
-                Move();
-                break;
-            default:
-                Reticule();
-                break;
-        }
-    }
 }
