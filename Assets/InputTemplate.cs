@@ -28,9 +28,24 @@ public abstract class Parent : MonoBehaviour
 
     protected ISpell _spell;
 
+    // Update is called once per frame
+    void Update()
+    {
+        Transition();
+        switch (_state)
+        {
+            case CharacterState.MOVING:
+                Move();
+                break;
+            default:
+                Reticule();
+                break;
+        }
+    }
+
     public Vector3 CreateMoveVec(float f)
     {
-        var vector = new Vector3(0, 0, 0);
+        var vector = new Vector3(0f, 0f, 0f);
         if (UnityEngine.Input.GetKey(_dirConfig.up))
         {
             vector += new Vector3(0.0f, 0.0f, 1);
@@ -59,7 +74,7 @@ public abstract class Parent : MonoBehaviour
             _reticule = _reticuleFactory.reticuleFor(_spell, pos, transform.rotation, this);
             _state = CharacterState.CASTING;
         }
-        else if (Input.GetKeyUp(_spellConfig.cast))
+        else if (Input.GetKeyUp(_spellConfig.cast) && _state == CharacterState.CASTING)
         {
             _reticule.Cast();
             _state = CharacterState.MOVING;

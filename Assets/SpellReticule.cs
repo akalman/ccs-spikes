@@ -1,5 +1,5 @@
 ﻿using UnityEngine;
-using System.Collections;
+using System.Linq;
 
 public class SpellReticule : MonoBehaviour {
 
@@ -20,25 +20,26 @@ public class SpellReticule : MonoBehaviour {
 
     public void Cast()
     {
-        var thing = _registry.WithinRadius(_registryId, 1f);
-
-        var spell = _spell;
-
-        foreach (var t in thing)
-        {
-            spell = t.Value._spell.fuseWith(spell);
-            t.Value.Fuse();
-        }
+        var spell = _registry
+            .WithinRadius(1f, transform.position)
+            .Where(other => other.Key != _registryId)
+            .Select(other => other.Value.Fuse(_spell))
+            .FirstOrDefault(other => other != null) ?? _spell;
 
         Debug.Log(spell.effect());
         CleanUp();
     }
 
-    public void Fuse()
+    public ISpell Fuse(ISpell other)
     {
-        Debug.Log(_spell.ToString() + " -- fused");
-        _parent.SpellFused();
-        CleanUp();
+        var val = _spell.FuseWith(other);
+        if (val != null)
+        {
+            Debug.Log(_spell.ToString() + " -- fused");
+            _parent.SpellFused();
+            CleanUp();
+        }
+        return val;
     }
 
     private void CleanUp()

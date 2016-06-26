@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
+using System.Linq;
 
 public class SpellRegistry : MonoBehaviour {
 
@@ -21,19 +22,17 @@ public class SpellRegistry : MonoBehaviour {
         return registry;
     }
 
-    public IDictionary<long, SpellReticule> WithinRadius(long id, float radius)
+    public IEnumerable<KeyValuePair<long, SpellReticule>> WithinRadius(float radius, Vector3 center)
     {
-        var inner = new Dictionary<long, SpellReticule>();
-        var center = registry[id].transform.position;
-
-        foreach (var pair in registry)
-        {
-            if (Vector3.Distance(pair.Value.transform.position, center) < radius && pair.Key != id)
+        return registry.Select(pair => new
             {
-                inner.Add(pair.Key, pair.Value);
+                dist = Vector3.Distance(pair.Value.transform.position, center),
+                pair = pair
             }
-        }
-        return inner;
+        )
+        .OrderBy(anon => anon.dist)
+        .TakeWhile(anon => anon.dist < radius)
+        .Select(anon => anon.pair);
     }
 
     public long Register(SpellReticule reticule)

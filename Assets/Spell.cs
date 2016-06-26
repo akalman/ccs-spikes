@@ -1,6 +1,6 @@
 ﻿public interface ISpell {
 
-    ISpell fuseWith(ISpell other);
+    ISpell FuseWith(ISpell other);
 
     SpellEffect effect();
 	
@@ -38,7 +38,7 @@ public class TerribleSpell : ISpell
         return _effect;
     }
 
-    public ISpell fuseWith(ISpell other)
+    public ISpell FuseWith(ISpell other)
     {
         // fuck this spell
         return other;
@@ -54,7 +54,7 @@ public class PerfectSpell : ISpell
         return _effect;
     }
 
-    public ISpell fuseWith(ISpell other)
+    public ISpell FuseWith(ISpell other)
     {
         // fuck other spells
         return this;
