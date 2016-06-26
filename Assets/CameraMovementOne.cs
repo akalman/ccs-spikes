@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
+using Assets;
 
 public class CameraMovementOne : MonoBehaviour
 {
@@ -8,6 +9,8 @@ public class CameraMovementOne : MonoBehaviour
     public GameObject PlayerOne;
     public GameObject PlayerTwo;
     public GameObject CameraPrefab;
+
+    private int _count = 0;
 
     private Transform _transform;
     private GameObject[] _otherCameras;
@@ -29,7 +32,7 @@ public class CameraMovementOne : MonoBehaviour
             _needCamera[i] = false;
         }
 
-        var pois = GetPlayers().Select<GameObject, IEnumerable<Vector3>>(GetPointOfInterest);
+        var pois = GetPlayers().Select<GameObject, PlayerInterests>(GetPointOfInterest);
         var target = GetTargetCameraPosition(pois.ToList());
         _transform.position = target;
 
@@ -51,32 +54,34 @@ public class CameraMovementOne : MonoBehaviour
         return new[] { PlayerOne };
     }
 
-    private IEnumerable<Vector3> GetPointOfInterest(GameObject player)
+    private PlayerInterests GetPointOfInterest(GameObject player)
     {
-        var pois = new Vector3[0].ToList();
-        var playerPos = player.transform.position;
+        var pois = new PlayerInterests(player.transform.position);
         var playerVel = player.GetComponent<CharacterController>().velocity;
 
-        pois.Add(playerPos);
         if (playerVel != Vector3.zero)
         {
-            pois.Add(playerPos + playerVel * 3);
+            pois.Add(pois.GetPlayerPosition() + playerVel * 3);
         }
 
         return pois;
     }
 
-    public int GetOutlierIndex(IList<IEnumerable<Vector3>> pointsOfInterest)
+    public int GetOutlierIndex(IList<PlayerInterests> pointsOfInterest)
     {
-        var centers = pointsOfInterest.Select(pois => pois.Aggregate(Vector3.zero, (a, b) => a + b) / pois.Count());
-        var center = centers.Aggregate(Vector3.zero, (a, b) => a + b) / centers.Count();
-
-        var distances = centers.Select(c => (c - center).magnitude);
-
-        return distances.ToList().IndexOf(distances.Max());
+        return pointsOfInterest
+            .IndexOf(pointsOfInterest.Last(poi => !poi.Equals(pointsOfInterest.First())));
     }
 
-    public void CreateBubble(IList<IEnumerable<Vector3>> pointsOfInterest, int index)
+    private List<Rect> IndexToCornerRect = new List<Rect>
+    {
+        new Rect(0, .8f, .2f, .2f),
+        new Rect(.8f, .8f, .2f, .2f),
+        new Rect(0, 0, .2f, .2f),
+        new Rect(.8f, 0, .2f, .2f)
+    };
+
+    public void CreateBubble(IList<PlayerInterests> pointsOfInterest, int index)
     {
         if (_otherCameras[index] == null)
         {
@@ -87,44 +92,41 @@ public class CameraMovementOne : MonoBehaviour
         var camera = _otherCameras[index];
         camera.transform.position = GetTargetCameraPosition(new[] { pointsOfInterest[index] });
         camera.GetComponent<Camera>().depth = Camera.main.depth + 1;
-        camera.GetComponent<Camera>().rect = new Rect(0, 0, .2f, .2f);
+        camera.GetComponent<Camera>().rect = IndexToCornerRect[index];
         _needCamera[index] = true;
     }
 
-    private Vector3 GetTargetCameraPosition(IList<IEnumerable<Vector3>> pointsOfInterest)
+    private Vector3 GetTargetCameraPosition(IList<PlayerInterests> pointsOfInterest)
     {
         var xMin = float.MaxValue;
-        var yMin = float.MaxValue;
         var zMin = float.MaxValue;
         var xMax = float.MinValue;
-        var yMax = float.MinValue;
         var zMax = float.MinValue;
 
         foreach (var poi in pointsOfInterest.SelectMany(x => x))
         {
             if (poi.x > xMax) xMax = poi.x;
-            if (poi.y > yMax) yMax = poi.y;
             if (poi.z > zMax) zMax = poi.z;
             if (poi.x < xMin) xMin = poi.x;
-            if (poi.y < yMin) yMin = poi.y;
             if (poi.z < zMin) zMin = poi.z;
         }
 
-        var bottomLeftCorner = new Vector3(xMin, yMin, zMin);
-        var topRightCorner = new Vector3(xMax, yMax, zMax);
-        var center = bottomLeftCorner + (topRightCorner - bottomLeftCorner) / 2;
+        var aspect = Screen.width / Screen.height;
+        var allowedZ = Mathf.Sqrt((30 * 30) / (1 + aspect * aspect));
+        var allowedX = allowedZ * aspect;
 
-        Debug.Log(topRightCorner - bottomLeftCorner);
-
-        if ((topRightCorner - bottomLeftCorner).magnitude > 30)
+        if (xMax - xMin > allowedX || zMax - zMin > allowedZ)
         {
             var outlierIndex = GetOutlierIndex(pointsOfInterest);
             CreateBubble(pointsOfInterest, outlierIndex);
+            var placeholder = GetPlaceholderPointOfInterest(pointsOfInterest, outlierIndex, xMin, xMax, zMin, zMax);
+            pointsOfInterest[outlierIndex] = placeholder;
 
-            return GetTargetCameraPosition(pointsOfInterest.Where((x, i) => i != outlierIndex).ToList());
+            return GetTargetCameraPosition(pointsOfInterest);
         }
         else
         {
+            var center = (new Vector3(xMin, 0, zMin) + new Vector3(xMax, 0, zMax)) / 2;
             var horizontalDistance = xMax - xMin;
             var verticalDistance = zMax - zMin;
             var aspectRatio = Screen.width / Screen.height;
@@ -137,34 +139,17 @@ public class CameraMovementOne : MonoBehaviour
 
             if (verticalDistance > horizontalDistance / aspectRatio)
             {
-                return center + new Vector3(0, Mathf.Max(verticalDistance * heightPerVerticalDistance, 5), 0);
+                return center + new Vector3(0, Mathf.Max(verticalDistance * heightPerVerticalDistance + 1, 5), 0);
             }
 
-            return center + new Vector3(0, Mathf.Max((horizontalDistance / aspectRatio) * heightPerVerticalDistance, 5), 0);
+            return center + new Vector3(0, Mathf.Max((horizontalDistance / aspectRatio) * heightPerVerticalDistance + 1, 5), 0);
         }
     }
 
-    private Vector3 ClampComponentVector(
-        Vector3 acceleration,
-        float componentMagnitude,
-        float velocityMagnitude)
+    private PlayerInterests GetPlaceholderPointOfInterest(
+        IList<PlayerInterests> pois, int outlierIndex,
+        float xMin, float xMax, float zMin, float zMax)
     {
-        if (componentMagnitude * velocityMagnitude < 0)
-        {
-            if (acceleration.magnitude > .2)
-            {
-                acceleration.Normalize();
-                acceleration.Scale(new Vector3(.2f, .2f, .2f));
-            }
-        }
-        else
-        {
-            if (acceleration.magnitude > .01)
-            {
-                acceleration.Normalize();
-                acceleration.Scale(new Vector3(.01f, .01f, .01f));
-            }
-        }
-        return acceleration;
+        return pois.First();
     }
 }
